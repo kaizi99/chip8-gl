@@ -23,6 +23,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <iterator>
+#include <vector>
 #include <memory>
 
 // 3 floats positions, 2 floats texture coordinates
@@ -65,8 +67,33 @@ void error_callback(int error, const char* description)
     std::cerr << "GLFW ERROR: Code " << error << ": " << description << std::endl;
 }
 
-int main()
+int main(int argc, const char* argv[])
 {
+    Chip8 chip;
+
+    std::ifstream rom("res/pong.rom", std::ios::binary | std::ios::in);
+    if (rom.is_open())
+    {
+        std::streampos size = rom.tellg();
+        char* memblock = new char[size];
+        rom.seekg(0, std::ios::beg);
+        rom.read(memblock, size);
+        rom.close();
+        
+        std::vector<uint8_t> romData;
+        romData.reserve(size);
+        for (int i = 0; i < size; i++)
+            romData.push_back((uint8_t)memblock[i]);
+
+        delete[] memblock;
+        chip.SetRom(romData);
+    }
+    else
+    {
+        std::cerr << "INIT ERROR: Could not load rom" << std::endl;
+        return 1;
+    }
+
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
     {
@@ -171,9 +198,6 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    Chip8 chip;
-    chip.Tick();
 
     auto imageData = ConvertToRGBA(chip.GetDisplay());
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData.get());
