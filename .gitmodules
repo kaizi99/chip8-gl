@@ -1,6 +1,6 @@
 [submodule "deps/chip8-lib"]
 	path = deps/chip8-lib
-	url = git@github.com:kaizi99/chip8-lib.git
+	url = https://github.com/kaizi99/chip8-lib.git
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw.git
